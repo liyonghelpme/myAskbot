@@ -395,6 +395,7 @@ def get_enabled_major_login_providers():
         return profile['id']
     def get_qq_user_id(client):
         profile = client.request('me')
+        print "profile is", profile
         return profile['openid']
     if askbot_settings.QQ_KEY and askbot_settings.QQ_SECRET:
         print "setting qq"
@@ -404,11 +405,12 @@ def get_enabled_major_login_providers():
             'type':'oauth2',
             'auth_endpoint' : 'https://graph.qq.com/oauth2.0/authorize',
             'token_endpoint' : 'https://graph.qq.com/oauth2.0/token',
-            'resource_endpoint' : 'https://graph.qq.com/',
+            'resource_endpoint' : 'https://graph.qq.com/oauth2.0/',
             'icon_media_path' : '/jquery-openid/images/qq.png',
             'get_user_id_function' : get_qq_user_id,
             'response_parser' : lambda data : dict(urlparse.parse_qsl(data)),
         }
+    """
     if askbot_settings.FACEBOOK_KEY and askbot_settings.FACEBOOK_SECRET:
         data['facebook'] = {
             'name': 'facebook',
@@ -526,6 +528,7 @@ def get_enabled_major_login_providers():
         'icon_media_path': '/jquery-openid/images/openid.gif',
         'openid_endpoint': None,
     }
+    """
    
     return filter_enabled_providers(data)
 get_enabled_major_login_providers.is_major = True
@@ -540,6 +543,7 @@ def get_enabled_minor_login_providers():
     structure of dictionary values is the same as in get_enabled_major_login_providers
     """
     data = SortedDict()
+    return data
     #data['myopenid'] = {
     #    'name': 'myopenid',
     #    'display_name': 'MyOpenid',
@@ -828,6 +832,7 @@ class OAuthConnection(object):
                         endpoint_url,
                         self.request_token['oauth_token'],
                     )
+        print "auth_url", auth_url
 
         return auth_url
 
@@ -839,6 +844,9 @@ def get_oauth2_starter_url(provider_name, csrf_token):
     params = providers[provider_name]
     client_id = getattr(askbot_settings, provider_name.upper() + '_KEY')
     redirect_uri = site_url(reverse('user_complete_oauth2_signin'))
+    #qq = redirect_uri.split(':')
+    #nurl = qq[0]+':'+qq[1]+qq[2][qq[2].find('/'):]
+    #redirect_uri=nurl
     client = Client(
         auth_endpoint=params['auth_endpoint'],
         client_id=client_id,

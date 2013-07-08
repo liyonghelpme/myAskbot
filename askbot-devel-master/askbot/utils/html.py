@@ -124,7 +124,9 @@ def sanitize_html(html):
 def site_url(url):
     from askbot.conf import settings
     base_url = urlparse(settings.APP_URL)
-    return base_url.scheme + '://' + base_url.netloc + url
+    #remote port
+    nop = base_url.netloc.split(':')[0]
+    return base_url.scheme + '://' + nop + url
 
 def site_link(url_name, title):
     """returns html for the link to the given url
