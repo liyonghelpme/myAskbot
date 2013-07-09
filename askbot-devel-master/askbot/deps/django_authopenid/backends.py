@@ -14,6 +14,7 @@ from askbot.deps.django_authopenid.ldap_auth import ldap_authenticate
 from askbot.deps.django_authopenid.ldap_auth import ldap_create_user
 from askbot.conf import settings as askbot_settings
 from askbot.models.signals import user_registered
+from askbot.utils.QQ import QQ
 
 LOG = logging.getLogger(__name__)
 
@@ -42,11 +43,13 @@ class AuthBackend(object):
                 wordpress_url = None, # required for self hosted wordpress
                 wp_user_id = None, # required for self hosted wordpress
                 method = None,#requried parameter
+                access_token = None,
             ):
         """this authentication function supports many login methods
         just which method it is going to use it determined
         from the signature of the function call
         """
+        print "authenticate", username, password, user_id, provider_name, openid_url, email_key, oauth_user_id, facebook_user_id, wordpress_url, wp_user_id, method
         login_providers = util.get_enabled_login_providers()
         assoc = None # UserAssociation not needed for ldap
         if method == 'password':
@@ -152,6 +155,13 @@ class AuthBackend(object):
                                                 provider_name = provider_name
                                             )
                     user = assoc.user
+                    print "assoc", assoc.user, type(user)
+                    #qq = QQ()
+                    #ret = qq.qq()
+
+                    #user.access_token = access_token
+                    #print "user token", user.access_token
+                    #user.save()
                 except UserAssociation.DoesNotExist:
                     return None
             else:

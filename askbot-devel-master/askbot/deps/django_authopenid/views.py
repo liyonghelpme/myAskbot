@@ -269,6 +269,7 @@ def not_authenticated(func):
     return decorated
 
 def complete_oauth2_signin(request):
+    print "complete oauth2 signin", request
     if 'next_url' in request.session:
         next_url = request.session['next_url']
         del request.session['next_url']
@@ -309,6 +310,7 @@ def complete_oauth2_signin(request):
         code=request.GET['code'],
         parser=params['response_parser']
     )
+    print "client is", client
 
     #todo: possibly set additional parameters here
     user_id = params['get_user_id_function'](client)
@@ -316,13 +318,32 @@ def complete_oauth2_signin(request):
     user = authenticate(
                 oauth_user_id = user_id,
                 provider_name = provider_name,
-                method = 'oauth'
+                method = 'oauth' 
+                #token = client.access_token
             )
+    user.client = client
+    req = 'https://graph.qq.com/user/get_user_info'
+    body  = urllib.urlencode(
+        {'access_token':client.access_token, 
+        'oauth_consumer_key':client_id, 
+        'openid':user_id, 
+        'format':'json'}).encode('utf8')
+    req = req+'?'+body
+    print req
+    msg = urllib.urlopen(req)
+    print "user msg", msg
+    import json
+    data = json.loads(msg.read())
+    print "data", data
+    user.nickname = data['nickname']
+    user.figureurl = data['figureurl']
 
     logging.debug('finalizing oauth signin')
 
     request.session['email'] = ''#todo: pull from profile
     request.session['username'] = ''#todo: pull from profile
+    request.session['nickname'] = data['nickname']
+    request.session['figureurl'] = data['figureurl']
 
     return finalize_generic_signin(
                         request = request,
